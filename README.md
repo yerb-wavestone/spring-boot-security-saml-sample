@@ -149,7 +149,11 @@ In the `SAML Keys` tab you need to import the Keystore of the example app.
 
 * Browse to http://localhost:8080
 * Click on `Getting started`
+<<<<<<< Upstream, based on origin/master
 * Under `Select your Identity Provider` choose `http://localhost:8081/auth/realms/demo` and click `Start 3rd Party Login`.
+=======
+* Under `Select your Identity Provider` choose `http://localhost:9080/auth/realms/spring_saml` and click `Start 3rd Party Login`.
+>>>>>>> 5f16a7c addition of Keycloak IDP
 
 ---------
 
