@@ -1,0 +1,29 @@
+{
+  "realm" : "spring_saml",
+  "users" : [ {
+    "id" : "b41aa6f3-7f4c-4131-b294-33f11c27443f",
+    "createdTimestamp" : 1593705900811,
+    "username" : "samluser",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "Sam",
+    "lastName" : "Luser",
+    "email" : "samluser@dummy.com",
+    "credentials" : [ {
+      "id" : "0c9e0e8c-685f-47d7-b826-6f3828ecad88",
+      "type" : "password",
+      "createdDate" : 1593705927255,
+      "secretData" : "{\"value\":\"8yGWpmdIyJh0nRtHc4zjNCN2xpasE+jZAuI16Sc/V7SLWGyRfVusOjcp8+j7ZPLpUfzKAwuy4HHeMWIBFqnoDg==\",\"salt\":\"Fp/RtzqS+F1f/Drfmypl3A==\"}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\"}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "manage-account", "view-profile" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ "/NL" ]
+  } ]
+}

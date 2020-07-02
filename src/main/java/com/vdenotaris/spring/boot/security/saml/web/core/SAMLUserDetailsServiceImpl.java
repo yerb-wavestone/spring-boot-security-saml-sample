@@ -19,6 +19,7 @@ package com.vdenotaris.spring.boot.security.saml.web.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensaml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,6 +45,12 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		String userID = credential.getNameID().getValue();
 		
 		LOG.info(userID + " is logged in");
+		
+		LOG.info(credential.getAttributes().size() + " attributes");
+		for (final Attribute attr : credential.getAttributes()) {
+			LOG.info("- " + attr.getName() + " = " + credential.getAttributeAsString(attr.getName()));
+		}
+		
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
 		authorities.add(authority);

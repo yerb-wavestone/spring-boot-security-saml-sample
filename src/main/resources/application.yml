@@ -1,0 +1,11 @@
+logging:
+  file: #project.basedir#/../logs/spring-boot-security-saml-sample.log
+  pattern:
+    console: '%d{HH:mm:ss} %5p [%-40.40logger{39}] %msg%n%rEx{full}'
+    file: ${logging.pattern.console}
+  level:
+    org.springframework.security.saml: DEBUG
+    org.opensaml: INFO
+    com.vdenotaris.spring.boot.security.saml: DEBUG
+
+keycloak.auth-server-url: http://localhost:9080/auth/realms/spring_saml
