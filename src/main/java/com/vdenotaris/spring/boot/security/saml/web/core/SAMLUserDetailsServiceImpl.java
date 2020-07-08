@@ -28,16 +28,13 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
-import org.springframework.stereotype.Service;
 
-@Service
 public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	
-	// Logger
 	private static final Logger LOG = LoggerFactory.getLogger(SAMLUserDetailsServiceImpl.class);
 	
-	public Object loadUserBySAML(SAMLCredential credential)
-			throws UsernameNotFoundException {
+	@Override
+	public Object loadUserBySAML(SAMLCredential credential) throws UsernameNotFoundException {
 		
 		// The method is supposed to identify local account of user referenced by
 		// data in the SAML assertion and return UserDetails object describing the user.
@@ -51,9 +48,15 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 			LOG.info("- " + attr.getName() + " = " + credential.getAttributeAsString(attr.getName()));
 		}
 		
-		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+		List<GrantedAuthority> authorities = new ArrayList<>();
 		GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
 		authorities.add(authority);
+		if (hasSimpleAttribute(credential, "EmailAddress", "erb.wavestone@gmail.com")) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_YERB"));
+		}
+		if (hasSimpleAttribute(credential, "country", "NL")) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_NL"));
+		}
 
 		// In a real scenario, this implementation has to locate user in a arbitrary
 		// dataStore based on information present in the SAMLCredential and
@@ -61,4 +64,9 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		return new User(userID, "<abc123>", true, true, true, true, authorities);
 	}
 	
+	private boolean hasSimpleAttribute(final SAMLCredential credential, final String name, final String value) {
+		return credential.getAttributes().stream().anyMatch(
+				attr -> name.equals(attr.getName()) && value.equals(credential.getAttributeAsString(attr.getName())));
+	}
+
 }

@@ -19,9 +19,13 @@ package com.vdenotaris.spring.boot.security.saml.web;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
+import com.vdenotaris.spring.boot.security.saml.web.config.ApplicationProperties;
+
 @SpringBootApplication
+@EnableConfigurationProperties(ApplicationProperties.class)
 public class Application extends SpringBootServletInitializer {
 
     @Override

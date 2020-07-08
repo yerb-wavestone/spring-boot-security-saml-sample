@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+	<head>
+	    <style>
+			table td {
+				vertical-align:top;
+				border:solid 1px #888;
+				padding:10px;
+			}
+	    </style>
+	</head>
+	<body>
+		<h1>SAML error</h1>
+		<table>
+		    <tr>
+		        <td>Date</td>
+		        <td th:text="${timestamp}"/>
+		    </tr>
+		    <tr>
+		        <td>Error</td>
+		        <td th:text="${error}"/>
+		    </tr>
+		    <tr>
+		        <td>Trace</td>
+		        <td style="white-space: pre-wrap" th:text="${trace}"/>
+		    </tr>
+		</table>
+	</body>
+</html>

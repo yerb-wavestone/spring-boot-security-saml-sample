@@ -4,8 +4,23 @@ logging:
     console: '%d{HH:mm:ss} %5p [%-40.40logger{39}] %msg%n%rEx{full}'
     file: ${logging.pattern.console}
   level:
+    org.apache.catalina.connector: DEBUG
+    org.springframework.http.client.support: DEBUG
     org.springframework.security.saml: DEBUG
+    org.springframework.security.saml.metadata: INFO
+    org.springframework.security.saml.websso.WebSSOProfileConsumerImpl: INFO
+    org.springframework.security.web.access: DEBUG
+    org.springframework.security.web.authentication: DEBUG
+    org.springframework.security.web.context: DEBUG
     org.opensaml: INFO
     com.vdenotaris.spring.boot.security.saml: DEBUG
 
-keycloak.auth-server-url: http://localhost:9080/auth/realms/spring_saml
+app:
+  saml:
+    login-endpoint: http://localhost:8080/saml/login/
+    relay-state:
+      default-value: http://localhost:4200/test
+      valid-patterns: ['http://localhost:4200(?:/.*)?']
+    identity-providers:
+#      - ssocircle: https://idp.ssocircle.com/meta-idp.xml
+      - keycloak:  http://localhost:9080/auth/realms/spring_saml/protocol/saml/descriptor
