@@ -1,5 +1,6 @@
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -20,6 +21,8 @@ public class ApplicationProperties {
 
 		private final Map<String, String> identityProviders = new LinkedHashMap<>();
 
+		private final Context context = new Context();
+
 		private String loginEndpoint;
 
 		public RelayState getRelayState() {
@@ -28,6 +31,10 @@ public class ApplicationProperties {
 
 		public Map<String, String> getIdentityProviders() {
 			return identityProviders;
+		}
+
+		public Context getContext() {
+			return context;
 		}
 
 		public String getLoginEndpoint() {
@@ -57,6 +64,20 @@ public class ApplicationProperties {
 
 			public void setValidPatterns(String[] validPatterns) {
 				this.validPatterns = validPatterns;
+			}
+
+		}
+
+		public static class Context {
+
+			private URI replacementUri;
+
+			public URI getReplacementUri() {
+				return replacementUri;
+			}
+
+			public void setReplacementUri(URI replacementUri) {
+				this.replacementUri = replacementUri;
 			}
 
 		}

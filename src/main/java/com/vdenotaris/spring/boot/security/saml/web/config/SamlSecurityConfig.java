@@ -16,6 +16,7 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -174,6 +175,7 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
     @Bean
     public SAMLContextProviderImpl contextProvider() {
 		final RelayState relayProps = props.getSaml().getRelayState();
+		final URI replacementUri = props.getSaml().getContext().getReplacementUri();
 		
 		SAMLContextProviderLB samlContextProviderLB = new SAMLContextProviderLB() {
 			@Override
@@ -188,11 +190,11 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
 				}
 			}
 		};
-		samlContextProviderLB.setScheme("http");
-		samlContextProviderLB.setServerName("localhost");
-		samlContextProviderLB.setServerPort(8080);
+		samlContextProviderLB.setScheme(replacementUri.getScheme());
+		samlContextProviderLB.setServerName(replacementUri.getHost());
+		samlContextProviderLB.setServerPort(replacementUri.getPort());
+		samlContextProviderLB.setContextPath(replacementUri.getPath());
 		samlContextProviderLB.setIncludeServerPortInRequestURL(true);
-		samlContextProviderLB.setContextPath("/");
 		return samlContextProviderLB;
     }
  
@@ -276,7 +278,7 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
     @Bean
     public ExtendedMetadata extendedMetadata() {
 	    ExtendedMetadata extendedMetadata = new ExtendedMetadata();
-	    extendedMetadata.setIdpDiscoveryEnabled(false);
+	    extendedMetadata.setIdpDiscoveryEnabled(props.getSaml().getIdentityProviders().size() > 1);
 	    extendedMetadata.setSigningAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
 	    extendedMetadata.setSignMetadata(true);
 	    extendedMetadata.setEcpEnabled(true);
@@ -327,7 +329,7 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
     public MetadataGenerator metadataGenerator() {
         MetadataGenerator metadataGenerator = new MetadataGenerator();
         metadataGenerator.setEntityId("com:vdenotaris:spring:sp");
-        metadataGenerator.setEntityBaseURL("http://localhost:8080");
+        metadataGenerator.setEntityBaseURL(props.getSaml().getContext().getReplacementUri().toString());
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager()); 
