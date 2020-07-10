@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+
+<configuration scan="true" scanPeriod="30 seconds">
+
+	<!-- to simplify stack traces -->
+	<property name="stackTraceEvaluator"
+		value="
+		$VirtualFilterChain.doFilter,
+		BySpringCGLIB$$,
+		com.sun.proxy,
+		io.undertow.security.handlers,
+		io.undertow.server.Connectors,
+		io.undertow.server.handlers,
+		io.undertow.server.HttpServerExchange,
+		io.undertow.servlet.core,
+		io.undertow.servlet.handlers,
+		java.lang.reflect,
+		java.lang.Thread.run,
+		java.util.concurrent.ThreadPoolExecutor,
+		javax.servlet.http.HttpServlet,
+		jdk.internal.reflect.,
+		org.apache.catalina.,
+		org.apache.coyote.,
+		org.hibernate.exception.internal.SQLStateConversionDelegate,
+		org.hibernate.exception.internal.StandardSQLExceptionConverter,
+		org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint.proceed,
+		org.springframework.aop.framework.CglibAopProxy,
+		org.springframework.aop.framework.JdkDynamicAopProxy,
+		org.springframework.aop.framework.ReflectiveMethodInvocation,
+		org.springframework.aop.interceptor.ExposeInvocationInterceptor,
+		org.springframework.cglib.proxy,
+		org.springframework.dao.support.ChainedPersistenceExceptionTranslator,
+		org.springframework.dao.support.PersistenceExceptionTranslationInterceptor,
+		org.springframework.data.repository.core.support.SurroundingTransactionDetectorMethodInterceptor,
+		org.springframework.security.access.intercept.AbstractSecurityInterceptor,
+		org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor,
+		org.springframework.security.web.access.ExceptionTranslationFilter,
+		org.springframework.security.web.access.intercept.FilterSecurityInterceptor,
+		org.springframework.security.web.authentication.AnonymousAuthenticationFilter,
+		org.springframework.security.web.authentication.logout.LogoutFilter,
+		org.springframework.security.web.authentication.www.BasicAuthenticationFilter,
+		org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter,
+		org.springframework.security.web.context.SecurityContextPersistenceFilter,
+		org.springframework.security.web.FilterChainProxy,
+		org.springframework.security.web.header.HeaderWriterFilter,
+		org.springframework.security.web.savedrequest.RequestCacheAwareFilter,
+		org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter,
+		org.springframework.security.web.session.SessionManagementFilter,
+		org.springframework.transaction.interceptor.TransactionAspectSupport,
+		org.springframework.transaction.interceptor.TransactionInterceptor,
+		org.springframework.web.filter.AbstractRequestLoggingFilter,
+		org.springframework.web.filter.CharacterEncodingFilter,
+		org.springframework.web.filter.CorsFilter,
+		org.springframework.web.filter.DelegatingFilterProxy,
+		org.springframework.web.filter.HiddenHttpMethodFilter,
+		org.springframework.web.filter.HttpPutFormContentFilter,
+		org.springframework.web.filter.OncePerRequestFilter,
+		org.springframework.web.filter.RequestContextFilter,
+		org.springframework.web.method.support.InvocableHandlerMethod,
+		org.springframework.web.servlet.DispatcherServlet,
+		org.springframework.web.servlet.FrameworkServlet,
+		org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter,
+		org.springframework.web.servlet.mvc.method.annotation,
+		sun.reflect,
+		Valve.invoke" />
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- https://logback.qos.ch/manual/configuration.html#shutdownHook and https://jira.qos.ch/browse/LOGBACK-1090 -->
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+</configuration>

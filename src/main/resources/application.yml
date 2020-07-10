@@ -1,7 +1,7 @@
 logging:
   file: #project.basedir#/../logs/spring-boot-security-saml-sample.log
   pattern:
-    console: '%d{HH:mm:ss} %5p [%-40.40logger{39}] %msg%n%rEx{full}'
+    console: '%d{HH:mm:ss} %5p [%-40.40logger{39}] %msg%n%rEx{full, ${stackTraceEvaluator}}'
     file: ${logging.pattern.console}
   level:
     org.apache.catalina.connector: DEBUG
@@ -12,9 +12,16 @@ logging:
     org.springframework.security.web.access: DEBUG
     org.springframework.security.web.authentication: DEBUG
     org.springframework.security.web.context: DEBUG
+    org.springframework.security.web.csrf.CsrfFilter: DEBUG
     org.opensaml: INFO
     com.vdenotaris.spring.boot.security.saml: DEBUG
 
+spring:
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: logback-spring.xml
+      
 app:
   saml:
     login-endpoint: http://localhost:8080/saml/login/

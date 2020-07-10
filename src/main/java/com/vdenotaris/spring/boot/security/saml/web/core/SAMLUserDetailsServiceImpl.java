@@ -16,6 +16,8 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.core;
 
+import static com.vdenotaris.spring.boot.security.saml.web.config.SecurityConstant.ROLE_NL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +57,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 			authorities.add(new SimpleGrantedAuthority("ROLE_YERB"));
 		}
 		if (hasSimpleAttribute(credential, "country", "NL")) {
-			authorities.add(new SimpleGrantedAuthority("ROLE_NL"));
+			authorities.add(new SimpleGrantedAuthority(ROLE_NL));
 		}
 
 		// In a real scenario, this implementation has to locate user in a arbitrary

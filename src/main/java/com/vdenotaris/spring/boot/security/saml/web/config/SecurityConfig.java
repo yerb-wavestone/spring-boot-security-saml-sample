@@ -1,5 +1,10 @@
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
+import static com.vdenotaris.spring.boot.security.saml.web.config.SecurityConstant.ROLE_NL;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 import com.vdenotaris.spring.boot.security.saml.web.config.jwt.JwtAuthenticationFilter;
@@ -27,13 +33,13 @@ import com.vdenotaris.spring.boot.security.saml.web.config.jwt.JwtAuthentication
 @EnableWebSecurity
 public class SecurityConfig {
 
-	private static final String APP = "yer";
+	private static final String API = "yerApi";
 
 	/**
 	 * Rest security configuration for /jwt/api/
 	 */
 	@Configuration
-	@Order(1)
+	@Order(2)
 	public static class JwtProtectedApiSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		private static final String apiMatcher = "/jwt/api/**";
@@ -57,7 +63,7 @@ public class SecurityConfig {
 	 * Rest security configuration for /jwt/token
 	 */
 	@Configuration
-	@Order(2)
+	@Order(3)
 	public static class JwtTokenSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		private static final String apiMatcher = "/jwt/token";
@@ -65,8 +71,8 @@ public class SecurityConfig {
 		private final AuthenticationEntryPoint entryPoint;
 		private final CsrfTokenRepository csrfTokenRepository;
 
-		public JwtTokenSecurityConfig(final @Qualifier(APP) AuthenticationEntryPoint entryPoint,
-				final CsrfTokenRepository csrfTokenRepository) {
+		public JwtTokenSecurityConfig(final @Qualifier(API) AuthenticationEntryPoint entryPoint,
+				final @Qualifier(API) CsrfTokenRepository csrfTokenRepository) {
 			this.entryPoint = entryPoint;
 			this.csrfTokenRepository = csrfTokenRepository;
 		}
@@ -74,27 +80,24 @@ public class SecurityConfig {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http.exceptionHandling().authenticationEntryPoint(entryPoint);
-//            http.csrf().csrfTokenRepository(tokenRepository).requireCsrfProtectionMatcher(req -> true);
+			http.anonymous().disable();
+			http.csrf().csrfTokenRepository(csrfTokenRepository);
 			http.antMatcher(apiMatcher) //
-					.authorizeRequests().anyRequest().authenticated();
-			// TODO role
+					.authorizeRequests().anyRequest().hasAuthority(ROLE_NL);
 		}
 	}
 
 	/**
-	 * Rest security configuration for /saml/api/
+	 * Rest security configuration for remaining endpoints
 	 */
 	@Configuration
-	@Order(3)
 	public static class SamlProtectedApiSecurityConfig extends WebSecurityConfigurerAdapter {
-
-		private static final String apiMatcher = "/saml/api/**";
 
 		private final AuthenticationEntryPoint entryPoint;
 		private final CsrfTokenRepository csrfTokenRepository;
 
-		public SamlProtectedApiSecurityConfig(final @Qualifier(APP) AuthenticationEntryPoint entryPoint,
-				final CsrfTokenRepository csrfTokenRepository) {
+		public SamlProtectedApiSecurityConfig(final @Qualifier(API) AuthenticationEntryPoint entryPoint,
+				final @Qualifier(API) CsrfTokenRepository csrfTokenRepository) {
 			this.entryPoint = entryPoint;
 			this.csrfTokenRepository = csrfTokenRepository;
 		}
@@ -102,17 +105,15 @@ public class SecurityConfig {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http.exceptionHandling().authenticationEntryPoint(entryPoint);
-//			http.anonymous().disable();
-//            http.csrf().disable();
-			http.antMatcher(apiMatcher) //
-					.authorizeRequests().anyRequest().authenticated();
-			// TODO role
+			http.anonymous().disable();
+			http.csrf().csrfTokenRepository(csrfTokenRepository);
+			http.authorizeRequests().anyRequest().hasAuthority(ROLE_NL);
 		}
 
 	}
 
 	@Bean
-	@Qualifier(APP)
+	@Qualifier(API)
 	@Lazy
 	public AuthenticationEntryPoint httpStatusEntryPointWithLocation(final ApplicationProperties props) {
 		return (request, response, authException) -> {
@@ -122,9 +123,28 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	@Qualifier(API)
 	@Lazy
-	public CsrfTokenRepository csrfTokenRepository() {
-		return CookieCsrfTokenRepository.withHttpOnlyFalse();
+	public CsrfTokenRepository readOnlyCsrfTokenRepository() {
+		return new CsrfTokenRepository() {
+			final CsrfTokenRepository delegate = CookieCsrfTokenRepository.withHttpOnlyFalse();
+
+			@Override
+			public void saveToken(final CsrfToken token, HttpServletRequest request, HttpServletResponse response) {
+				// don't save
+			}
+
+			@Override
+			public CsrfToken loadToken(HttpServletRequest request) {
+				return delegate.loadToken(request);
+			}
+
+			@Override
+			public CsrfToken generateToken(HttpServletRequest request) {
+				return delegate.generateToken(request);
+			}
+
+		};
 	}
 
 	/**

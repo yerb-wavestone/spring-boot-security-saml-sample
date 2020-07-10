@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -103,18 +104,29 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import com.vdenotaris.spring.boot.security.saml.web.config.ApplicationProperties.Saml.RelayState;
 import com.vdenotaris.spring.boot.security.saml.web.core.SAMLUserDetailsServiceImpl;
  
 @Configuration
+@Order(1)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements InitializingBean, DisposableBean {
 
 	private static final String PARAM_RELAY_STATE = "RelayState";
+	
+	private RequestMatcher loginMatcher = new AntPathRequestMatcher("/saml/login/**");
+	private RequestMatcher logoutMatcher = new AntPathRequestMatcher("/saml/logout/**");
+	private RequestMatcher metadataMatcher = new AntPathRequestMatcher("/saml/metadata/**");
+	private RequestMatcher ssoMatcher = new AntPathRequestMatcher("/saml/SSO/**");
+	private RequestMatcher ssoHokMatcher = new AntPathRequestMatcher("/saml/SSOHoK/**");
+	private RequestMatcher singleLogoutMatcher = new AntPathRequestMatcher("/saml/SingleLogout/**");
+	private RequestMatcher discoveryMatcher = new AntPathRequestMatcher("/saml/discovery/**");
 	
 	@Autowired
 	private ApplicationProperties props;
@@ -481,20 +493,13 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
     @Bean
     public FilterChainProxy samlFilter() throws Exception {
         List<SecurityFilterChain> chains = new ArrayList<>();
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/login/**"),
-                samlEntryPoint()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/logout/**"),
-                samlLogoutFilter()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/metadata/**"),
-                metadataDisplayFilter()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SSO/**"),
-                samlWebSSOProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SSOHoK/**"),
-                samlWebSSOHoKProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SingleLogout/**"),
-                samlLogoutProcessingFilter()));
-        chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/discovery/**"),
-                samlIDPDiscovery()));
+        chains.add(new DefaultSecurityFilterChain(loginMatcher, samlEntryPoint()));
+        chains.add(new DefaultSecurityFilterChain(logoutMatcher, samlLogoutFilter()));
+        chains.add(new DefaultSecurityFilterChain(metadataMatcher, metadataDisplayFilter()));
+        chains.add(new DefaultSecurityFilterChain(ssoMatcher, samlWebSSOProcessingFilter()));
+        chains.add(new DefaultSecurityFilterChain(ssoHokMatcher, samlWebSSOHoKProcessingFilter()));
+        chains.add(new DefaultSecurityFilterChain(singleLogoutMatcher, samlLogoutProcessingFilter()));
+        chains.add(new DefaultSecurityFilterChain(discoveryMatcher, samlIDPDiscovery()));
         return new FilterChainProxy(chains);
     }
      
@@ -515,7 +520,12 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
 	public void configure(WebSecurity web) {
         web.ignoring()
 //            .antMatchers(HttpMethod.OPTIONS, "/**")
-            .antMatchers("/favicon.ico");
+            .antMatchers("/")
+            .antMatchers("/favicon.ico")
+	        .antMatchers("/css/**")
+	        .antMatchers("/img/**")
+	        .antMatchers("/js/**")
+	        .antMatchers("/saml-error.html");
 	}
 	
     /**
@@ -529,18 +539,20 @@ public class SamlSecurityConfig extends WebSecurityConfigurerAdapter implements 
         http
             .httpBasic()
                 .authenticationEntryPoint(samlEntryPoint());      
+        // add cookie for API calls but don't check it
+        http
+				.csrf()
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+				.requireCsrfProtectionMatcher(req -> false);
         http
         		.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class)
-        		.addFilterAfter(samlFilter(), BasicAuthenticationFilter.class)
-        		.addFilterBefore(samlFilter(), CsrfFilter.class);
-        http        
-            .authorizeRequests()
-           		.antMatchers("/").permitAll()
-           		.antMatchers("/saml/**").permitAll()
-           		.antMatchers("/css/**").permitAll()
-           		.antMatchers("/img/**").permitAll()
-           		.antMatchers("/js/**").permitAll()
-           		.anyRequest().authenticated();
+        		.addFilterAfter(samlFilter(), BasicAuthenticationFilter.class);
+		http
+				.requestMatcher(new OrRequestMatcher(
+						loginMatcher, logoutMatcher, metadataMatcher, ssoMatcher,
+						ssoHokMatcher, singleLogoutMatcher, discoveryMatcher
+				))
+				.authorizeRequests().anyRequest().authenticated();
         http
         		.logout()
         			.disable();	// The logout procedure is already handled by SAML filters.

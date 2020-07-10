@@ -23,7 +23,8 @@ public class SAMLApiController {
 	@GetMapping
 	public ResponseEntity<?> getValue(final Authentication auth,
 			final @RequestHeader(name = HEADER_NAME, required = false) Optional<String> csrfToken) {
-		return ResponseEntity.ok(Map.of(HEADER_NAME, csrfToken.orElse("<empty>"), "userDetails", auth.getDetails()));
+		return ResponseEntity.ok(Map.of(HEADER_NAME, csrfToken.orElse("<empty>"), "userDetails",
+				auth != null && auth.getDetails() != null ? auth.getDetails() : "<empty>"));
 	}
 
 	@PostMapping
